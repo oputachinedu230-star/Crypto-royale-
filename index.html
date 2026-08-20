@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Crypto Watch Rewards</title>
+  <script src="https://telegram.org/js/telegram-web-app.js?63"></script>
+  <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+  <style>
+    :root{--bg:#0b1020;--card:#141b31;--text:#f5f7ff;--muted:#9aa6c2;--accent:#6d5dfc;--good:#38d996}
+    *{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#0b1020,#111936);color:var(--text);font-family:Arial,sans-serif}
+    .wrap{max-width:520px;margin:auto;padding:22px 16px 40px}.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .logo{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,#7b61ff,#35d7c4);display:grid;place-items:center;font-size:25px}
+    h1{font-size:22px;margin:0}.muted{color:var(--muted);font-size:13px}.balance{background:var(--card);border:1px solid #253052;border-radius:22px;padding:22px;margin:12px 0 16px}
+    .balance small{color:var(--muted)}.amount{font-size:34px;font-weight:800;margin:6px 0}.coin{color:#a89cff}
+    button{width:100%;border:0;border-radius:16px;padding:15px;font-size:16px;font-weight:700;cursor:pointer}
+    .primary{background:var(--accent);color:white}.secondary{background:#202944;color:white;margin-top:10px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.card{background:var(--card);border:1px solid #253052;border-radius:18px;padding:16px}.card b{display:block;font-size:18px;margin-bottom:6px}
+    .status{min-height:20px;text-align:center;color:var(--muted);font-size:13px;margin:12px 0}.note{font-size:12px;line-height:1.5;color:var(--muted);margin-top:18px}
+    input{width:100%;padding:14px;border-radius:14px;border:1px solid #303b60;background:#0e1529;color:white;margin:8px 0 10px}
+    .hidden{display:none}.success{color:var(--good)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">₿</div>
+    <div><h1>Crypto Watch Rewards</h1><div class="muted">Watch rewarded ads and earn points</div></div>
+  </div>
+
+  <div class="balance">
+    <small>Your balance</small>
+    <div class="amount"><span id="balance">0</span> <span class="coin">CRW</span></div>
+    <div class="muted">100 CRW = 0.01 USDT (demo rate)</div>
+  </div>
+
+  <button id="watch" class="primary">🎬 Watch Ad +10 CRW</button>
+  <div id="status" class="status">Ready.</div>
+
+  <div class="grid">
+    <div class="card"><b id="ads">0</b><span class="muted">Ads completed</span></div>
+    <div class="card"><b id="withdrawn">0</b><span class="muted">Withdrawals</span></div>
+  </div>
+
+  <button id="withdrawBtn" class="secondary">💳 Withdraw</button>
+
+  <div id="withdrawBox" class="card hidden" style="margin-top:12px">
+    <b>Withdraw USDT</b>
+    <div class="muted">Demo form — connect a secure payout backend before real payments.</div>
+    <input id="wallet" placeholder="TON wallet address">
+    <button id="submitWithdraw" class="primary">Request withdrawal</button>
+  </div>
+
+  <div class="note">
+    This is an MVP. AdsGram rewards are triggered only after its rewarded-ad completion event.
+    The demo stores balance locally on the device. For real money/crypto withdrawals, use a server-side
+    database, Telegram init-data validation, anti-fraud controls and a secure payout service.
+  </div>
+</div>
+
+<script>
+  const tg = window.Telegram?.WebApp;
+  tg?.ready(); tg?.expand();
+
+  // Replace this with the Block ID from your AdsGram dashboard.
+  const BLOCK_ID = "YOUR_BLOCK_ID";
+  const REWARD = 10;
+
+  const key = "crw_state_v1";
+  let state = JSON.parse(localStorage.getItem(key) || '{"balance":0,"ads":0,"withdrawn":0}');
+
+  const $ = id => document.getElementById(id);
+  function save(){ localStorage.setItem(key, JSON.stringify(state)); render(); }
+  function render(){
+    $("balance").textContent = state.balance;
+    $("ads").textContent = state.ads;
+    $("withdrawn").textContent = state.withdrawn;
+  }
+  function status(t, good=false){ $("status").textContent=t; $("status").className="status"+(good?" success":""); }
+
+  let controller = null;
+  if (BLOCK_ID !== "YOUR_BLOCK_ID" && window.Adsgram) {
+    controller = window.Adsgram.init({blockId: BLOCK_ID});
+  }
+
+  $("watch").onclick = async () => {
+    if (!controller) {
+      status("Add your AdsGram Block ID first.");
+      return;
+    }
+    $("watch").disabled = true;
+    status("Loading ad…");
+    try {
+      controller.addEventListener?.("onReward", () => {
+        state.balance += REWARD;
+        state.ads += 1;
+        save();
+        status(`Reward received: +${REWARD} CRW`, true);
+      });
+      await controller.show();
+    } catch(e) {
+      status("No rewarded ad was completed. Try again later.");
+    } finally {
+      $("watch").disabled = false;
+    }
+  };
+
+  $("withdrawBtn").onclick = () => $("withdrawBox").classList.toggle("hidden");
+  $("submitWithdraw").onclick = () => {
+    const wallet = $("wallet").value.trim();
+    if (!wallet) return status("Enter your TON wallet address.");
+    if (state.balance < 10000) return status("Minimum demo withdrawal is 10,000 CRW.");
+    status("Demo request created. Real payout is not connected yet.");
+  };
+
+  render();
+</script>
+</body>
+</html>
