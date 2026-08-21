@@ -82,10 +82,14 @@ const REGISTER_REFERRAL_URL=
 
 const key="crw_state_v3";
 
-let state=JSON.parse(
-  localStorage.getItem(key) ||
-  '{"balance":0,"ads":0,"invites":0,"withdrawn":0}'
-);
+const key="crw_state_v3";
+
+let state={
+  balance:0,
+  ads:0,
+  invites:0,
+  withdrawn:0
+};
 
 const $=id=>document.getElementById(id);
 
