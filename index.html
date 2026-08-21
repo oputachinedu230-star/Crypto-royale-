@@ -81,10 +81,10 @@ function save(){localStorage.setItem(key,JSON.stringify(state));render()}
 function render(){$("balance").textContent=state.balance;$("ads").textContent=state.ads;$("invites").textContent=state.invites}
 function status(t,good=false){$("status").textContent=t;$("status").className="status"+(good?" success":"")}
 
-const botUsername="YOUR_BOT_USERNAME";
+const botUsername="CC_royale_bot";
 let userId=tg?.initDataUnsafe?.user?.id;
 let refCode=userId||"demo";
-let inviteLink=`https://t.me/${botUsername}?startapp=ref_${refCode}`;
+let inviteLink=`https://t.me/${botUsername}/crypto_royale?startapp=ref_${refCode}`;
 $("refLink").textContent=inviteLink;
 
 let controller=null;
@@ -94,8 +94,9 @@ $("watch").onclick=async()=>{
  if(!controller){status("Watch ads and earn crypto.");return}
  $("watch").disabled=true;status("Loading ad…");
  try{
-   controller.addEventListener?.("onReward",()=>{state.balance+=REWARD;state.ads+=1;save();status(`Reward received: +${REWARD} CRW`,true)});
-   await controller.show();
+   const result=await controller.show();
+   if(result && result.done===false){status("The ad was not completed. No reward was added.");return}
+   state.balance+=REWARD;state.ads+=1;save();status(`Reward received: +${REWARD} CRW`,true);
  }catch(e){status("No rewarded ad was completed. Try again later.")}
  finally{$("watch").disabled=false}
 };
