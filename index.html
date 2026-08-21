@@ -88,7 +88,12 @@ let inviteLink=`https://t.me/${botUsername}/crypto_royale?startapp=ref_${refCode
 $("refLink").textContent=inviteLink;
 
 let controller=null;
-if(BLOCK_ID!=="YOUR_BLOCK_ID"&&window.Adsgram) controller=window.Adsgram.init({blockId:BLOCK_ID});
+if(BLOCK_ID!=="YOUR_BLOCK_ID"&&window.Adsgram) {
+  controller=window.Adsgram.init({blockId:BLOCK_ID});
+  controller.addEventListener?.("onBannerNotFound",()=>status("No ad is available right now. Please try again later."));
+  controller.addEventListener?.("onNonStopShow",()=>status("Please wait before watching another ad."));
+  controller.addEventListener?.("onTooLongSession",()=>status("Please restart the app before watching more ads."));
+}
 
 $("watch").onclick=async()=>{
  if(!controller){status("Watch ads and earn crypto.");return}
