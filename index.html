@@ -89,10 +89,9 @@ let state=JSON.parse(
 
 const $=id=>document.getElementById(id);
 
-function save(){
-  localStorage.setItem(key,JSON.stringify(state));
+  function save(){
   render();
-}
+  }
 
 function render(){
   $("balance").textContent=state.balance;
