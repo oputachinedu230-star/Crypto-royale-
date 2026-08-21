@@ -142,12 +142,14 @@ async function registerUser(){
       return;
     }
 
-    if(result.reward===REF_REWARD){
-      state.balance+=REF_REWARD;
-      state.invites+=1;
-      save();
-      status("🎉 Referral reward received: +50 CRW",true);
-      return;
+    if(result.referral_rewarded === true){
+
+  status(
+    "🎉 Your friend joined! The inviter received +50 CRW.",
+    true
+  );
+
+  return;
     }
 
     status("Ready.");
